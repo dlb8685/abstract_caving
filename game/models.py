@@ -18,7 +18,7 @@ class Cavern(models.Model):
         - Is Entrance? (this will be true for one Cavern, where id=1, otherwise false)
         - Many-to-many relationship with other Caverns, to build out the network of them
     '''
-    title = models.TextField(blank=True, default="")
+    title = models.TextField(db_index=True, blank=True, default="")
     description = models.TextField(blank=True, default="")
     link = models.CharField(max_length=1000, blank=True, default="")
     color = models.ForeignKey(Color)
@@ -28,8 +28,15 @@ class Cavern(models.Model):
     
     def __str__(self):
         return self.title[:50]
-        
-    def get_to_caverns(self, from_cavern=None):
-        to_caverns = self.connections.all()
-        to_caverns = list(set(to_caverns) - set([from_cavern]))
-        return to_caverns
+
+
+class High_Score(models.Model):
+    '''
+    Save high scores and index the score such that you can quickly create Top 10 lists.
+    Tiebreaker will be created time.
+    User can enter their name, or it will default to unknown.
+    '''
+    move_count = models.SmallIntegerField(db_index=True)
+    total_points = models.SmallIntegerField(db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=50, blank=True, default="anonymous")

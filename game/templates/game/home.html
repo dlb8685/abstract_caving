@@ -7,7 +7,10 @@
 
 {% block content %}
 {% if alert %}
-<div class="alert_window">
+<div class="alert_window" id="alert_window_main">
+{% autoescape off %}
+{{ alert }}
+{% endautoescape %}
 </div>
 {% endif %}
 <div class="cavern_window" style="background-color: {{ current_cavern.color.color }}">
@@ -15,43 +18,64 @@
     <div class="cavern_description">
     {% autoescape off %}
     {{ current_cavern.description }}
+    <p><strong><a target="_blank" href="http://{{ current_cavern.link }}">Full Article</a> ...</strong></p>
     {% endautoescape %}
     </div>
     <div class="from_cavern_link">
     {% if from_cavern %}
-    <h3>Previous Room</h4> <div class="pure-button" id="{{ from_cavern.title }}">{{ from_cavern.title }}</div>
+    <h3>Previous Room</h3>
+    <form method="POST" name="{{ from_cavern.title }}">{% csrf_token %}
+    <input type="hidden" name="current_title" value="{{ from_cavern.title }}">
+    <div class="pure-button" id="{{ from_cavern.title }}"><strong>{{ from_cavern.title }}</strong></div>
+    </form>
     {% endif %}
     </div>
     <div class="to_cavern_links">
-    <h3>Connected Rooms/Caverns</h3>
+    {% if from_cavern %}<h3>Other Connected Rooms</h3>
+    {% else %}<h3>Connected Rooms</h3>
+    {% endif %}
+    {% if to_caverns %}
     {% for to_cavern in to_caverns %}
-    <form method="POST" name="{{ to_cavern.title }}">
-    <div class="pure-button" id="{{ to_cavern.title }}" onclick="document.forms['{{ to_cavern.title }}'].submit();"><strong>{{ to_cavern.title }}</strong></div>
+    <form method="POST" name="{{ to_cavern.title }}" id=>{% csrf_token %}
+    <input type="hidden" name="current_title" value="{{ to_cavern.title }}">
+    <div class="pure-button" id="{{ to_cavern.title }}"}}"><strong>{{ to_cavern.title }}</strong></div>
     </form>
     {% endfor %}
+    {% else %}
+    <div class="alert_window">
+    You have reached a dead-end. Turn around and try a different route.
+    </div>
+    {% endif %}
     </div>
 </div>
 <div class="scoring_window">
 <h3>Your Score</h3>
 <ul>
-<li>Move Count: <i>{{ move_count }}</i></li>
-<li>Total Points: <i>{{ total_points }}</i></li>
+<li>Move Count: <i>{{ move_count_str }}</i></li>
+<li>Total Points: <i>{{ total_points_str }}</i></li>
 </ul>
 </div>
 <div class="game_faq">
 <h3>FAQ</h3>
 <ul>
-<li><strong>This so-called cave is stupid. Can I just go somewhere and read the articles?</strong><br><i>All content comes from <a target="_blank" href="http://en.wikipedia.org/">Wikipedia</a>. If you enjoy this game please visit and support Wikipedia.</i></li>
+<li><strong>This cave is stupid. Can I just go somewhere and read the articles?</strong><br><i>All content comes from <a target="_blank" href="http://en.wikipedia.org/">Wikipedia</a>. If you enjoy this game please visit and support Wikipedia.</i></li>
+<li><strong>How many points is it possible to get?</strong><br><i>If you went to every room in this cave, you would get 2,619 points. It is impossible to visit every room within 1,000 moves.</i>
 <li><strong>Should my kid be playing this game?</strong><br><i>We think so. There are no images on this website. But be aware that in the context of health and medicine, some rooms do have written content relating to illegal drugs and sexuality. Use your discretion.</i></li>
+<li><strong>Any clues as to the structure of this cave?</strong><br><i>It's complicated.</i></li>
 </ul>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script>
-game_temp = {};
-game_temp.move_count = {{ move_count }};
-game_temp.total_points = {{ total_points }};
-game_temp.visited_rooms = {{ visited_room_ids }}; 
+abstractCavingGameData_temp = {};
+abstractCavingGameData_temp.move_count = {{ move_count }};
+abstractCavingGameData_temp.total_points = {{ total_points }};
+abstractCavingGameData_temp.visited_room_ids = {{ visited_room_ids }};
+{% autoescape off %}
+abstractCavingGameData_temp.from_title = '{{ current_cavern.title }}';
+{% endautoescape %}
 </script>
+<script src="/static/game.js" /></script>
 {% endblock %}

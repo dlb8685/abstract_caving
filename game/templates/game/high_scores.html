@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="canonical" href="{% url "game_high_scores" %}" />
+<meta name="description" content="View top scores for the Cave of Knowledge game." />
+{% endblock %}
+
+{% block content %}
+<h1>High Scores</h1>
+<div class="high_score_window">
+<h3>50 Moves</h3>
+<table>
+<tr><th>Rank</th><th>Name</th><th>Total Points</th><th>Date</th></tr>
+{% for score in high_scores_50 %}
+<tr><td>{{forloop.counter}}</td><td>{{ score.name }}</td><td>{{ score.total_points }}</td><td>{{ score.created_at|date:"M d, Y" }}</td></tr>
+{% endfor %}
+</table>
+</div>
+<div class="high_score_window">
+<h3>100 Moves</h3>
+<table>
+<tr><th>Rank</th><th>Name</th><th>Total Points</th><th>Date</th></tr>
+{% for score in high_scores_100 %}
+<tr><td>{{forloop.counter}}</td><td>{{ score.name }}</td><td>{{ score.total_points }}</td><td>{{ score.created_at|date:"M d, Y" }}</td></tr>
+{% endfor %}
+</table>
+</div>
+<div class="high_score_window">
+<h3>250 Moves</h3>
+<table>
+<tr><th>Rank</th><th>Name</th><th>Total Points</th><th>Date</th></tr>
+{% for score in high_scores_250 %}
+<tr><td>{{forloop.counter}}</td><td>{{ score.name }}</td><td>{{ score.total_points }}</td><td>{{ score.created_at|date:"M d, Y" }}</td></tr>
+{% endfor %}
+</table>
+</div>
+<div class="high_score_window">
+<h3>1,000 Moves</h3>
+<table>
+<tr><th>Rank</th><th>Name</th><th>Total Points</th><th>Date</th></tr>
+{% for score in high_scores_1000 %}
+<tr><td>{{forloop.counter}}</td><td>{{ score.name }}</td><td>{{ score.total_points }}</td><td>{{ score.created_at|date:"M d, Y" }}</td></tr>
+{% endfor %}
+</table>
+</div>
+{% endblock %}

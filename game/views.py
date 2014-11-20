@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from game import models
+from game import models, utils
+import ast
 
 # Create your views here.
 def game_home(request):
@@ -29,18 +30,131 @@ def game_home(request):
 
     if request.method == 'GET':
         ## TO-DO --> Always ship a csrf tag ###
-        current_cavern = models.Cavern.objects.get(id=2)
+        current_cavern = models.Cavern.objects.get(id=1)
         from_cavern = None
-        to_caverns = current_cavern.get_to_caverns(from_cavern)
+        to_caverns = utils.cavern_get_to_caverns(current_cavern, from_cavern)
         move_count = 0
         total_points = 0
         visited_room_ids = []
+        alert = None
         context_dictionary = {
             'current_cavern': current_cavern,
             'from_cavern': from_cavern,
             'to_caverns': to_caverns,
             'move_count': move_count,
+            'move_count_str': "{:,}".format(move_count),
             'total_points': total_points,
+            'total_points_str': "{:,}".format(total_points),
             'visited_room_ids': visited_room_ids,
+            'alert': alert,
             }
         return render(request, 'game/home.html', context_dictionary)
+        
+    if request.method == 'POST':
+        # raw text values
+        move_count = request.POST.get('move_count')
+        total_points = request.POST.get('total_points')
+        visited_room_ids = request.POST.get('visited_room_ids')
+        from_title = request.POST.get('from_title')
+        current_title = request.POST.get('current_title')
+        # convert to usable
+        move_count = int(move_count)
+        total_points = int(total_points)
+        if visited_room_ids == '0':
+            visited_room_ids = []
+        else:
+            visited_room_ids = ast.literal_eval(visited_room_ids)
+        from_cavern = models.Cavern.objects.filter(title=from_title)[0]
+        current_cavern = models.Cavern.objects.filter(title=current_title)[0]
+        alert = None
+        # If user cheats and hard-types some bullshit title, disallow
+        if not current_cavern in utils.cavern_get_to_caverns(from_cavern):
+            current_cavern = from_cavern
+            from_cavern = None
+            to_caverns = utils.cavern_get_to_caverns(current_cavern)
+            alert = "There was an error in the last thing you submitted. Please try again."
+            context_dictionary = {
+                'current_cavern': current_cavern,
+                'from_cavern': from_cavern,
+                'to_caverns': to_caverns,
+                'move_count': move_count,
+                'move_count_str': "{:,}".format(move_count),
+                'total_points': total_points,
+                'total_points_str': "{:,}".format(total_points),
+                'visited_room_ids': visited_room_ids,
+                'alert': alert,
+                }
+            return render(request, 'game/home.html', context_dictionary)
+        else:
+            to_caverns = utils.cavern_get_to_caverns(current_cavern, from_cavern)
+            if current_cavern.points > 0:
+                if not current_cavern.id in visited_room_ids:
+                    visited_room_ids.append(current_cavern.id)
+                    total_points += current_cavern.points
+                    points_alert = '<p>Congratulations! This room has {0} points.</p>'\
+                        .format(current_cavern.points)
+                    alert = points_alert
+                else:
+                    points_alert = None
+            else:
+                points_alert = None
+            move_count += 1
+            if move_count in (50, 100, 250, 100):
+                high_scores = utils.get_high_scores(x=10, move_count=move_count)
+                try:
+                    cutoff = high_scores[9].total_points
+                except:
+                    cutoff = -1
+                if total_points > cutoff:
+                    high_score_alert = '<p>You have a high score of {0} points in {1} moves. \
+                        Enter your name or initials to submit to our leaderboard \
+                        (this will not interrupt your game): \
+                        <input type="text" id="high_score_name" /></p> \
+                        <div class="pure-button" id="high_score_submit">Submit</div>'\
+                        .format(total_points, move_count)
+                    if alert:
+                        alert += high_score_alert
+                    else:
+                        alert = high_score_alert
+            context_dictionary = {
+                'current_cavern': current_cavern,
+                'from_cavern': from_cavern,
+                'to_caverns': to_caverns,
+                'move_count': move_count,
+                'move_count_str': "{:,}".format(move_count),
+                'total_points': total_points,
+                'total_points_str': "{:,}".format(total_points),
+                'visited_room_ids': visited_room_ids,
+                'alert': alert,
+                }
+            return render(request, 'game/home.html', context_dictionary)
+        
+        
+def game_high_scores(request):
+    x = 10 #Return top 10 unless you change your mind in the future
+    high_scores_50 = utils.get_high_scores(x, move_count=50)
+    high_scores_100 = utils.get_high_scores(x, move_count=100)
+    high_scores_250 = utils.get_high_scores(x, move_count=250)
+    high_scores_1000 = utils.get_high_scores(x, move_count=1000)
+    context_dictionary = {
+        'high_scores_50': high_scores_50,
+        'high_scores_100': high_scores_100,
+        'high_scores_250': high_scores_250,
+        'high_scores_1000': high_scores_1000,
+        }
+    return render(request, 'game/high_scores.html', context_dictionary)
+    
+    
+def game_save_high_score(request):
+    move_count = int(request.POST.get('move_count'))
+    total_points = int(request.POST.get('total_points'))
+    name = request.POST.get('name')
+    if name == '':
+        name = 'anonymous'
+    high_score = models.High_Score(
+        move_count=move_count, total_points=total_points, name=name
+        )
+    high_score.save()
+    context_dictionary = {
+        }
+    return render(request, 'game/high_score_saved.html', context_dictionary)
