@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="canonical" href="{% url "game_home" %}" />
+<meta name="description" content="Try a game which combines elements of caving, spatial reasoning, and general world historical, geographical, literary, and scientific knowledge." />
+{% endblock %}
+
+{% block content %}
+{% if alert %}
+<div class="alert_window">
+</div>
+{% endif %}
+<div class="cavern_window" style="background-color: {{ current_cavern.color.color }}">
+<h1 class="headline_pretty">{{ current_cavern.title }}</h1>
+    <div class="cavern_description">
+    {% autoescape off %}
+    {{ current_cavern.description }}
+    {% endautoescape %}
+    </div>
+    <div class="from_cavern_link">
+    {% if from_cavern %}
+    <h3>Previous Room</h4> <div class="pure-button" id="{{ from_cavern.title }}">{{ from_cavern.title }}</div>
+    {% endif %}
+    </div>
+    <div class="to_cavern_links">
+    <h3>Connected Rooms/Caverns</h3>
+    {% for to_cavern in to_caverns %}
+    <form method="POST" name="{{ to_cavern.title }}">
+    <div class="pure-button" id="{{ to_cavern.title }}" onclick="document.forms['{{ to_cavern.title }}'].submit();"><strong>{{ to_cavern.title }}</strong></div>
+    </form>
+    {% endfor %}
+    </div>
+</div>
+<div class="scoring_window">
+<h3>Your Score</h3>
+<ul>
+<li>Move Count: <i>{{ move_count }}</i></li>
+<li>Total Points: <i>{{ total_points }}</i></li>
+</ul>
+</div>
+<div class="game_faq">
+<h3>FAQ</h3>
+<ul>
+<li><strong>This so-called cave is stupid. Can I just go somewhere and read the articles?</strong><br><i>All content comes from <a target="_blank" href="http://en.wikipedia.org/">Wikipedia</a>. If you enjoy this game please visit and support Wikipedia.</i></li>
+<li><strong>Should my kid be playing this game?</strong><br><i>We think so. There are no images on this website. But be aware that in the context of health and medicine, some rooms do have written content relating to illegal drugs and sexuality. Use your discretion.</i></li>
+</ul>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+game_temp = {};
+game_temp.move_count = {{ move_count }};
+game_temp.total_points = {{ total_points }};
+game_temp.visited_rooms = {{ visited_room_ids }}; 
+</script>
+{% endblock %}
