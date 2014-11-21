@@ -207,7 +207,9 @@ h2.headline_pretty {
 .scoring_window {
     border: solid;
     border-color: #c9c9c9;
-    margin: 1.0em 0 0 0;
+    margin: 0 0 1.5em 0;
+    background-color: #f1f1f1;
+    border-width: 1px;
 }
 .scoring_window h3 {
     margin: 0.5em;
@@ -215,14 +217,18 @@ h2.headline_pretty {
 }
 .scoring_window ul {
     list-style-type: none;
-    margin: 0.5em;
+    margin: 0.5em 0.5em 1.0em 0;
     text-align: center;
     padding: 0;
 }
 .scoring_window li {
     font-size: 1.5em;
-    display: inline;
-    margin: 0 1.0em 0;
+    margin: 0;
+}
+.start_new_game_notice {
+    margin: 0.5em 0 0 1.5em;
+    font-style: italic;
+    font-size: 0.9em;
 }
 .game_faq {
     border: solid;
@@ -346,3 +352,18 @@ h2.headline_pretty {
 .pure-button-primary,.pure-button-selected,a.pure-button-primary,a.pure-button-selected {
     background-color:#0078e7;color:#fff
 } 
+
+
+.google_adsense_top_bar {
+    background-color: #fafafa;
+    width: 74.9em;
+    min-height: 1.2em;
+    font-size: 1.3em;
+    padding: 0.5em 1.0em;
+    text-align: center;
+    margin: 0.1em 0 0.2em;
+    border-style: solid;
+    border-color: #d5d5d5;
+    border-width: 1px;
+    clear: both;
+}

@@ -7,11 +7,20 @@
 <body class="base">
 <div class="container">        
 <div class="header"></div>
+<div class="google_adsense_top_bar">
+<!-- The Cave of Knowledge (responsive) -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-4108632501337934"
+     data-ad-slot="1572555605"
+     data-ad-format="auto"></ins>
+</div>
 <div class="content_box">
 <div class="content">
 {% block content %}{% endblock %}
 </div>
 <div class="sidebar">
+{% block sidebar %}{% endblock %}
 {% include "game/sidebar.html" %}
 </div>
 </div>
@@ -20,5 +29,9 @@
 </div>  
 </div>
 {% block scripts %}{% endblock %}
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
 </body>
 </html>
