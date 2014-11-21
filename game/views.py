@@ -1,6 +1,10 @@
 from django.shortcuts import render
-from game import models, utils
+from game import models, utils, fncache, redis_info
+from django.middleware.csrf import get_token
 from json import loads
+from django.conf import settings
+import redis
+
 
 # Create your views here.
 def game_home(request):
@@ -29,25 +33,8 @@ def game_home(request):
     '''
 
     if request.method == 'GET':
-        ## TO-DO --> Always ship a csrf tag ###
-        current_cavern = models.Cavern.objects.get(id=1)
-        from_cavern = None
-        to_caverns = utils.cavern_get_to_caverns(current_cavern, from_cavern)
-        move_count = 0
-        total_points = 0
-        visited_room_ids = []
-        alert = None
-        context_dictionary = {
-            'current_cavern': current_cavern,
-            'from_cavern': from_cavern,
-            'to_caverns': to_caverns,
-            'move_count': move_count,
-            'move_count_str': "{:,}".format(move_count),
-            'total_points': total_points,
-            'total_points_str': "{:,}".format(total_points),
-            'visited_room_ids': visited_room_ids,
-            'alert': alert,
-            }
+        csrf_token = get_token(request)
+        context_dictionary = game_home_get()
         return render(request, 'game/home.html', context_dictionary)
         
     if request.method == 'POST':
@@ -64,39 +51,29 @@ def game_home(request):
             visited_room_ids = []
         else:
             visited_room_ids = loads(visited_room_ids)
-        from_cavern = models.Cavern.objects.filter(title=from_title)[0]
-        current_cavern = models.Cavern.objects.filter(title=current_title)[0]
-        alert = None
-        # If user cheats and hard-types some bullshit title, disallow
-        if not current_cavern in utils.cavern_get_to_caverns(from_cavern):
-            current_cavern = from_cavern
-            from_cavern = None
-            to_caverns = utils.cavern_get_to_caverns(current_cavern)
-            alert = "There was an error in the last thing you submitted. Please try again."
-            context_dictionary = {
-                'current_cavern': current_cavern,
-                'from_cavern': from_cavern,
-                'to_caverns': to_caverns,
+        context_dictionary = cavern_title_get_to_caverns(from_title, current_title)
+        if context_dictionary['render_now']:
+            del context_dictionary['render_now']
+            context_dictionary.update({
                 'move_count': move_count,
                 'move_count_str': "{:,}".format(move_count),
                 'total_points': total_points,
                 'total_points_str': "{:,}".format(total_points),
                 'visited_room_ids': visited_room_ids,
-                'alert': alert,
-                }
+                })
             return render(request, 'game/home.html', context_dictionary)
         else:
-            to_caverns = utils.cavern_get_to_caverns(current_cavern, from_cavern)
-            if current_cavern.points > 0:
-                if not current_cavern.id in visited_room_ids:
-                    visited_room_ids.append(current_cavern.id)
-                    total_points += current_cavern.points
-                    if current_cavern.points == 1:
+            del context_dictionary['render_now']
+            if context_dictionary['current_cavern'].points > 0:
+                if not context_dictionary['current_cavern'].id in visited_room_ids:
+                    visited_room_ids.append(context_dictionary['current_cavern'].id)
+                    total_points += context_dictionary['current_cavern'].points
+                    if context_dictionary['current_cavern'].points == 1:
                         points_alert = '<p>Congratulations! This room has 1 point.</p>'
                     else:
                         points_alert = '<p>Congratulations! This room has {0} points.</p>'\
-                            .format(current_cavern.points)
-                    alert = points_alert
+                            .format(context_dictionary['current_cavern'].points)
+                    context_dictionary['alert'] = points_alert
                 else:
                     points_alert = None
             else:
@@ -115,21 +92,17 @@ def game_home(request):
                         <input type="text" id="high_score_name" /></p> \
                         <div class="pure-button" id="high_score_submit">Submit</div>'\
                         .format(total_points, move_count)
-                    if alert:
-                        alert += high_score_alert
+                    if context_dictionary['alert']:
+                        context_dictionary['alert'] += high_score_alert
                     else:
-                        alert = high_score_alert
-            context_dictionary = {
-                'current_cavern': current_cavern,
-                'from_cavern': from_cavern,
-                'to_caverns': to_caverns,
+                        context_dictionary['alert'] = high_score_alert
+            context_dictionary.update({
                 'move_count': move_count,
                 'move_count_str': "{:,}".format(move_count),
                 'total_points': total_points,
                 'total_points_str': "{:,}".format(total_points),
                 'visited_room_ids': visited_room_ids,
-                'alert': alert,
-                }
+                })
             return render(request, 'game/home.html', context_dictionary)
         
         
@@ -161,3 +134,73 @@ def game_save_high_score(request):
     context_dictionary = {
         }
     return render(request, 'game/high_score_saved.html', context_dictionary)
+
+    
+## Functions called by main views. Purpose is to cache these so that only the score shit
+    # which is dynamic needs to re-calculate with each request
+@fncache.redis_lru(capacity=1)
+def game_home_get():
+    current_cavern = models.Cavern.objects.get(id=1)
+    from_cavern = None
+    to_caverns = utils.cavern_get_to_caverns(current_cavern, from_cavern)
+    move_count = 0
+    total_points = 0
+    visited_room_ids = []
+    alert = None
+    context_dictionary = {
+        'current_cavern': current_cavern,
+        'from_cavern': from_cavern,
+        'to_caverns': to_caverns,
+        'move_count': move_count,
+        'move_count_str': "{:,}".format(move_count),
+        'total_points': total_points,
+        'total_points_str': "{:,}".format(total_points),
+        'visited_room_ids': visited_room_ids,
+        'alert': alert,
+        }
+    return context_dictionary
+game_home_get.init(
+    redis.StrictRedis(
+        host=redis_info.REDIS_HOST, port=redis_info.REDIS_PORT,
+        db=redis_info.REDIS_DB, password=redis_info.REDIS_PASSWORD
+        )
+    )
+
+
+@fncache.redis_lru(capacity=1000)
+def cavern_title_get_to_caverns(from_title, current_title):
+    from_cavern = models.Cavern.objects.filter(title=from_title)[0]
+    current_cavern = models.Cavern.objects.filter(title=current_title)[0]    
+    render_now = False
+    alert = None
+    # this should only happen if user is trying to cheat and hard-code some title to a
+        # high-value room. Otherwise we have issues.
+    if not current_cavern in utils.cavern_get_to_caverns(from_cavern):
+        current_cavern = from_cavern
+        from_cavern = None
+        to_caverns = utils.cavern_get_to_caverns(current_cavern)
+        alert = "There was an error in the last thing you submitted. Please try again."
+        context_dictionary = {
+            'current_cavern': current_cavern,
+            'from_cavern': from_cavern,
+            'to_caverns': to_caverns,
+            'alert': alert,
+            'render_now': render_now,
+            }
+        return context_dictionary
+    else:
+        to_caverns = utils.cavern_get_to_caverns(current_cavern, from_cavern)
+        context_dictionary = {
+            'current_cavern': current_cavern,
+            'from_cavern': from_cavern,
+            'to_caverns': to_caverns,
+            'alert': alert,
+            'render_now': render_now,
+            }
+        return context_dictionary
+cavern_title_get_to_caverns.init(
+    redis.StrictRedis(
+        host=redis_info.REDIS_HOST, port=redis_info.REDIS_PORT,
+        db=redis_info.REDIS_DB, password=redis_info.REDIS_PASSWORD
+        )
+    )
