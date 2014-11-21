@@ -39,4 +39,4 @@ class High_Score(models.Model):
     move_count = models.SmallIntegerField(db_index=True)
     total_points = models.SmallIntegerField(db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length=50, blank=True, default="anonymous")
+    name = models.CharField(max_length=25, blank=True, default="anonymous")

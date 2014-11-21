@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
+from django.views.decorators.cache import cache_page
 from game import views as game_views
 
 urlpatterns = patterns('',
@@ -9,7 +10,7 @@ urlpatterns = patterns('',
 
     #url(r'^admin/', include(admin.site.urls)),
     
-    url(r'^$', game_views.game_home, name="game_home"),
-    url(r'^high-scores/$', game_views.game_high_scores, name="game_high_scores"),
+    url(r'^$', cache_page(60 * 60 * 12)(game_views.game_home), name="game_home"),
+    url(r'^high-scores/$', cache_page(60 * 20)(game_views.game_high_scores), name="game_high_scores"),
     url(r'^save-high-score/$', game_views.game_save_high_score, name="game_save_high_score"),
 )

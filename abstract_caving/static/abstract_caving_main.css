@@ -270,6 +270,10 @@ h2.headline_pretty {
     border-width: 1px;
     text-align: center;
 }
+.high_score_intro {
+    text-align: center;
+    margin: 0;
+}
 
 /* pure-button */
 /* from http://purecss.io/buttons/ */

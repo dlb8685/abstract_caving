@@ -32,7 +32,6 @@ $(document).ready(function(){
     /* addHiddens(theForm, current_title); */
     $(".pure-button").click(function() {
         theForm = $(this).parent()[0];
-        console.log($(this)[0].id);
         if ($(this)[0].id != 'high_score_submit') {
             addHiddens(theForm);
             theForm.submit();

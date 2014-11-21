@@ -91,6 +91,21 @@ TEMPLATE_DIRS = (
     os.path.join(BASE_DIR, 'abstract_caving/templates'),
 )
 
+# Redis stuff
+from urllib.parse import urlparse
+redis_url = urlparse(os.environ.get('REDISTOGO_URL', 'redis://localhost:6379'))
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': '%s:%s' % (redis_url.hostname, redis_url.port),
+        'OPTIONS': {
+            'DB': 0,
+            'PASSWORD': redis_url.password,
+        }
+    }
+}
+
+
 if not 'DYNO' in os.environ:
     # SECURITY WARNING: keep the secret key used in production secret!
     # This part shouldn't run if in Heroku because it will error, regardless of the fact
