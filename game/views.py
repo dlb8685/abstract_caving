@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from game import models, utils
-import ast
+from json import loads
 
 # Create your views here.
 def game_home(request):
@@ -63,7 +63,7 @@ def game_home(request):
         if visited_room_ids == '0':
             visited_room_ids = []
         else:
-            visited_room_ids = ast.literal_eval(visited_room_ids)
+            visited_room_ids = loads(visited_room_ids)
         from_cavern = models.Cavern.objects.filter(title=from_title)[0]
         current_cavern = models.Cavern.objects.filter(title=current_title)[0]
         alert = None
@@ -91,8 +91,11 @@ def game_home(request):
                 if not current_cavern.id in visited_room_ids:
                     visited_room_ids.append(current_cavern.id)
                     total_points += current_cavern.points
-                    points_alert = '<p>Congratulations! This room has {0} points.</p>'\
-                        .format(current_cavern.points)
+                    if current_cavern.points == 1:
+                        points_alert = '<p>Congratulations! This room has 1 point.</p>'
+                    else:
+                        points_alert = '<p>Congratulations! This room has {0} points.</p>'\
+                            .format(current_cavern.points)
                     alert = points_alert
                 else:
                     points_alert = None

@@ -23,7 +23,8 @@ $(document).ready(function(){
         // Add data:
         addHidden(theForm, 'move_count', abstractCavingGameData.move_count);
         addHidden(theForm, 'total_points', abstractCavingGameData.total_points);
-        addHidden(theForm, 'visited_room_ids', abstractCavingGameData.visited_room_ids);
+        addHidden(theForm, 'visited_room_ids', 
+            JSON.stringify(abstractCavingGameData.visited_room_ids));
         addHidden(theForm, 'from_title', abstractCavingGameData.from_title);
     }
     

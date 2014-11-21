@@ -74,7 +74,7 @@ abstractCavingGameData_temp.move_count = {{ move_count }};
 abstractCavingGameData_temp.total_points = {{ total_points }};
 abstractCavingGameData_temp.visited_room_ids = {{ visited_room_ids }};
 {% autoescape off %}
-abstractCavingGameData_temp.from_title = '{{ current_cavern.title }}';
+abstractCavingGameData_temp.from_title = "{{ current_cavern.title }}";
 {% endautoescape %}
 </script>
 <script src="/static/game.js" /></script>

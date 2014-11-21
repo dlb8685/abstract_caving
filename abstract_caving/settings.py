@@ -16,9 +16,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'forw_qo9hcc@$mbz40#n6j#fu*&wwyimir@==y&lezk6qn!-mu'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -93,3 +90,41 @@ STATICFILES_DIRS = (
 TEMPLATE_DIRS = (
     os.path.join(BASE_DIR, 'abstract_caving/templates'),
 )
+
+if not 'DYNO' in os.environ:
+    # SECURITY WARNING: keep the secret key used in production secret!
+    # This part shouldn't run if in Heroku because it will error, regardless of the fact
+        # that this value would get overwritten 1.1 microseconds later anyway
+    with open('abstract_caving/static/secret_key.txt') as f:
+        SECRET_KEY = f.read().strip()
+        
+# The Heroku Code
+# (https://devcenter.heroku.com/articles/getting-started-with-django#prerequisites)
+
+# Only set this crap if you're running in Heroku (as opposed to Dev, etc.)
+    # http://stackoverflow.com/questions/9383450/how-can-i-detect-herokus-environment
+if 'DYNO' in os.environ:
+    # Parse database configuration from $DATABASE_URL
+    import dj_database_url
+    DATABASES['default'] = dj_database_url.config()
+
+    # Honor the 'X-Forwarded-Proto' header for request.is_secure()
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # Debugs to false
+    DEBUG = False
+    TEMPLATE_DEBUG = False
+
+    # Allow all host headers
+    ALLOWED_HOSTS = ['*']
+
+    # Static asset configuration
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    STATIC_ROOT = 'staticfiles'
+    STATIC_URL = '/static/'
+
+    STATICFILES_DIRS = (
+        os.path.join(BASE_DIR, 'static'),
+    )
+
+    SECRET_KEY = os.environ['SECRET_KEY']
