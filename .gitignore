@@ -51,4 +51,4 @@ venv
 staticfiles
 
 # Don't push sensitive info to repository
-/main/static/secret_key.txt
+/abstract_caving/static/secret_key.txt
