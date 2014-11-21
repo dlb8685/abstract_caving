@@ -52,3 +52,4 @@ staticfiles
 
 # Don't push sensitive info to repository
 /abstract_caving/static/secret_key.txt
+/abstract_caving/static/local_pg_password.txt
