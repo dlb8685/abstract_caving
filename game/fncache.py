@@ -42,8 +42,12 @@ def redis_lru(capacity=5000, slice=slice(None)):
 			eject()
 			conn = lvars[0]
 			conn.incr(cache_miss)
-			conn.hset(cache_vals, key, pickle.dumps(value))
-			conn.zadd(cache_keys, 0, key)
+			# slight mod for fault tolerance. just continue if it can't cache instead of shitting out a 500 error
+			try:
+    			conn.hset(cache_vals, key, pickle.dumps(value))
+	    		conn.zadd(cache_keys, 0, key)
+	    	except:
+	    	    pass
 			return value
 			
 		def get(key):

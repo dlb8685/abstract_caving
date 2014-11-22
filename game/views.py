@@ -140,7 +140,7 @@ def game_save_high_score(request):
     # which is dynamic needs to re-calculate with each request
 @fncache.redis_lru(capacity=1)
 def game_home_get():
-    current_cavern = models.Cavern.objects.get(id=1)
+    current_cavern = models.Cavern.objects.get(id=2323)
     from_cavern = None
     to_caverns = utils.cavern_get_to_caverns(current_cavern, from_cavern)
     move_count = 0
