@@ -167,7 +167,7 @@ game_home_get.init(
     )
 
 
-@fncache.redis_lru(capacity=150)
+@fncache.redis_lru(capacity=10)
 def cavern_title_get_to_caverns(from_title, current_title):
     from_cavern = models.Cavern.objects.filter(title=from_title)[0]
     current_cavern = models.Cavern.objects.filter(title=current_title)[0]    
