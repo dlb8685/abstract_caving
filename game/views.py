@@ -136,9 +136,7 @@ def game_save_high_score(request):
     return render(request, 'game/high_score_saved.html', context_dictionary)
 
     
-## Functions called by main views. Purpose is to cache these so that only the score shit
-    # which is dynamic needs to re-calculate with each request
-@fncache.redis_lru(capacity=1)
+## Functions called by main views.
 def game_home_get():
     current_cavern = models.Cavern.objects.get(id=1)
     from_cavern = None
@@ -159,15 +157,8 @@ def game_home_get():
         'alert': alert,
         }
     return context_dictionary
-game_home_get.init(
-    redis.StrictRedis(
-        host=redis_info.REDIS_HOST, port=redis_info.REDIS_PORT,
-        db=redis_info.REDIS_DB, password=redis_info.REDIS_PASSWORD
-        )
-    )
 
 
-@fncache.redis_lru(capacity=10)
 def cavern_title_get_to_caverns(from_title, current_title):
     from_cavern = models.Cavern.objects.filter(title=from_title)[0]
     current_cavern = models.Cavern.objects.filter(title=current_title)[0]    
@@ -198,9 +189,3 @@ def cavern_title_get_to_caverns(from_title, current_title):
             'render_now': render_now,
             }
         return context_dictionary
-cavern_title_get_to_caverns.init(
-    redis.StrictRedis(
-        host=redis_info.REDIS_HOST, port=redis_info.REDIS_PORT,
-        db=redis_info.REDIS_DB, password=redis_info.REDIS_PASSWORD
-        )
-    )
