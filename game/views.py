@@ -13,13 +13,7 @@ def game_home(request):
         ID = 1, show the room that explains what is going on
         Some sample text is shown
         -- How to click on other links, etc.
-        -- Return to: Usually you will be able to return to a previous room. 
-            Since this room is the starting point of the game, it is the lone exception.
-        -- Usually you will have additional rooms to venture into. 
-            If not, it means you have reached a dead-end.
-        -- Some rooms contain a point total. 
-            Try to get the maximum score you can with 20 moves, 100 moves, 500 moves, 1,000 moves, 
-                or as many as you have time for.
+        -- Some rooms contain a point total.
         -- This map never changes. There are almost 10,000 rooms. 
             You can start over and play as many games as you want to maximize your score, 
             or to simply learn new things.
@@ -79,7 +73,7 @@ def game_home(request):
             else:
                 points_alert = None
             move_count += 1
-            if move_count in (50, 100, 250, 100):
+            if move_count in (50, 100, 250, 500):
                 high_scores = utils.get_high_scores(x=10, move_count=move_count)
                 try:
                     cutoff = high_scores[9].total_points
@@ -111,12 +105,12 @@ def game_high_scores(request):
     high_scores_50 = utils.get_high_scores(x, move_count=50)
     high_scores_100 = utils.get_high_scores(x, move_count=100)
     high_scores_250 = utils.get_high_scores(x, move_count=250)
-    high_scores_1000 = utils.get_high_scores(x, move_count=1000)
+    high_scores_500 = utils.get_high_scores(x, move_count=500)
     context_dictionary = {
         'high_scores_50': high_scores_50,
         'high_scores_100': high_scores_100,
         'high_scores_250': high_scores_250,
-        'high_scores_1000': high_scores_1000,
+        'high_scores_500': high_scores_500,
         }
     return render(request, 'game/high_scores.html', context_dictionary)
     

@@ -36,10 +36,10 @@
 </table>
 </div>
 <div class="high_score_window">
-<h3>1,000 Moves</h3>
+<h3>500 Moves</h3>
 <table>
 <tr><th>Rank</th><th>Name</th><th>Total Points</th><th>Date</th></tr>
-{% for score in high_scores_1000 %}
+{% for score in high_scores_500 %}
 <tr><td>{{forloop.counter}}</td><td>{{ score.name }}</td><td>{{ score.total_points }}</td><td>{{ score.created_at|date:"M d, Y" }}</td></tr>
 {% endfor %}
 </table>
