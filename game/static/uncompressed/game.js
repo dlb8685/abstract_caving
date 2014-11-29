@@ -41,6 +41,7 @@ $(document).ready(function(){
     $("#high_score_submit").click(function() {
         var csrftoken = csrfToken();
         var high_score_name = $("#high_score_name").val();
+        $("#alert_window_main").html("<p>Your score is being submitted.</p>");
         $.ajax({
             type: "POST",
             url: "/save-high-score/",
